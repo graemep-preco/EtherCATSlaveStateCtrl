@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{f8726601-5d96-4696-8d54-3188b09ca2d1}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	fbDeviceStateCtrl		: FB_SetSlaveState;
+	bSetToInit				: BOOL;
+	bSetToOP				: BOOL;
+	EIPDataIn AT %I*		: ARRAY[1..5] OF WORD; 
+	EIPDataOut AT %Q*		: ARRAY[1..5] OF WORD; 
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bSetToInit THEN
+	IF fbDeviceStateCtrl.SetState(1,T#2S) THEN
+		bSetToInit := FALSE;
+	END_IF
+END_IF
+
+IF bSetToOP THEN
+	IF fbDeviceStateCtrl.SetState(8, T#2S) THEN
+		bSetToOP := FALSE;
+	END_IF
+END_IF
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="3" Count="13" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,319 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_SetSlaveState" Id="{aef72ee8-9f50-4680-a371-6ad716b75c87}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+:Description: FUNCTION block to control EtherCAT slave device state machine
+
+:Instructions for use: Requires Tc2_EtherCAT Library
+
+Version history:
+
++-------------+------------+----------------+----------+------------------------------------------+
+|Date         | Version    | created under  | Author   | Remark                                   |
++=============+============+================+==========+==========================================+
+|2024-12-12   | 1.0.0.0    | 			    | G.P      | Draft					                  |
++-------------+------------+----------------+----------+------------------------------------------+
+|			  | 		   | 			    | 		   | Release							      |
++-------------+------------+----------------+----------+------------------------------------------+
+
+*)
+FUNCTION_BLOCK FB_SetSlaveState
+VAR_INPUT
+	sAMSNet		  AT %I*			: AMSNETID; // Linked to EtherCAT master
+    nSlaveAddr    AT %I*     		: UINT;	    //  Linked to PortID of slave device
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbSetECSlaveState				: Tc2_EtherCAT.FB_EcSetSlaveState;
+	fbGetECSlaveState				: Tc2_EtherCAT.FB_EcGetSlaveState;
+	_nState							: UINT;
+    _sNetId       					: T_AmsNetId; // Must have a value
+	_CurrentState					: ST_EcSlaveState;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Property Name="CurrentState" Id="{e910f97b-d02d-499b-a64c-15775b80d0b6}">
+      <Declaration><![CDATA[PROPERTY CurrentState : ST_EcSlaveState]]></Declaration>
+      <Get Name="Get" Id="{3fbf1cbd-aa02-4e7d-a78d-2baad162b125}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[CurrentState := _CurrentState;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Method Name="GetState" Id="{ef692b14-199b-4434-befb-a4a3c2ca5e22}">
+      <Declaration><![CDATA[METHOD GetState : BOOL
+VAR_INPUT
+	tTimeout   						: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[GetState := FALSE;
+CASE _nState OF
+0:
+   _sNetID := F_CreateAmsNetId( sAMSNet ); // Convert linked EtherCAT Master AMS address and convert to string format FB's can use.
+   _nState := 1;
+
+1:
+  
+	// Get slave current state so we can check it changed to the requested state
+	fbGetECSlaveState(
+		sNetId:= _sNetId , 
+		nSlaveAddr:= nSlaveAddr, 
+		bExecute:= TRUE, 
+		tTimeout:= tTimeout);
+		_nState := 2; // Goto next state
+  
+2:  
+	fbGetECSlaveState(bExecute := FALSE, state=> _CurrentState ); // Reset the execute flag of get slave state
+	// Check get slave state has completed without errors
+	IF (NOT fbGetECSlaveState.bBusy) AND (NOT fbGetECSlaveState.bError) THEN
+		_nState := 3; // Move on
+	END_IF
+3:
+   // All complete so reset flags
+   GetState := TRUE;
+   _nState := 0;
+
+100:
+   ;                     // Error handling..
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ResetStateToOp" Id="{fa29bbc0-02d2-4203-8a0e-9b75850ff750}">
+      <Declaration><![CDATA[METHOD ResetStateToOp : BOOL
+VAR_INPUT
+	tTimeout		: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ResetStateToOp := FALSE;
+CASE _nState OF
+0:
+   _sNetID := F_CreateAmsNetId( sAMSNet ); // Convert linked EtherCAT Master AMS address and convert to string format FB's can use.
+   _nState := 1;
+
+1:
+   // Set the slave to the state requested to goto	
+   fbSetECSlaveState(
+	sNetId:= _sNetId, 
+	nSlaveAddr:= nSlaveAddr, // Linked port  
+	bExecute:= TRUE , 
+	tTimeout:= tTimeout , 
+	reqState:= 1); // State requested to init
+    _nState := _nState + 1; // Goto next state
+2:
+  
+  fbSetECSlaveState( bExecute := FALSE); // Reset the execute flag of set slave state
+  // Check the set slave state has completed without errors
+  IF (NOT fbSetECSlaveState.bBusy) AND (NOT fbSetECSlaveState.bError) THEN
+	 // Get slave current state so we can check it changed to the requested state
+	 fbGetECSlaveState(
+		sNetId:= _sNetId , 
+		nSlaveAddr:= nSlaveAddr, 
+		bExecute:= TRUE, 
+		tTimeout:= tTimeout);
+		_nState := 3; // Goto next state
+  END_IF
+  
+  IF fbSetECSlaveState.bError THEN
+	  _nState := 100;
+  END_IF
+  
+3:  
+	fbGetECSlaveState(bExecute := FALSE, state=> _CurrentState ); // Reset the execute flag of get slave state
+	// Check get slave state has completed without errors
+	IF (NOT fbGetECSlaveState.bBusy) AND (NOT fbGetECSlaveState.bError) THEN
+		_nState := 4; // Move on
+	END_IF
+	
+4:
+	// Make sure in correct state
+  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_INIT THEN
+  	   _nState := _nState + 1; // Goto next state
+	END_IF;
+	
+5:
+	// Set the slave to the state requested to goto	
+   fbSetECSlaveState(
+	sNetId:= _sNetId, 
+	nSlaveAddr:= nSlaveAddr, // Linked port  
+	bExecute:= TRUE , 
+	tTimeout:= tTimeout , 
+	reqState:= 8); // State requested to OP
+    _nState := _nState + 1; // Goto next state
+	
+6:
+	fbSetECSlaveState( bExecute := FALSE); // Reset the execute flag of set slave state
+  	// Check the set slave state has completed without errors
+  	IF (NOT fbSetECSlaveState.bBusy) AND (NOT fbSetECSlaveState.bError) THEN
+		// Get slave current state so we can check it changed to the requested state
+	 	fbGetECSlaveState(
+			sNetId:= _sNetId , 
+			nSlaveAddr:= nSlaveAddr, 
+			bExecute:= TRUE, 
+			tTimeout:= tTimeout);
+			_nState := _nState + 1; // Goto next state
+  	END_IF
+  
+	IF fbSetECSlaveState.bError THEN
+		_nState := 100;
+  	END_IF
+	
+7:  
+  	fbGetECSlaveState(bExecute := FALSE, state=> _CurrentState ); // Reset the execute flag of get slave state
+	// Check get slave state has completed without errors
+	IF (NOT fbGetECSlaveState.bBusy) AND (NOT fbGetECSlaveState.bError) THEN
+		_nState := _nState + 1; // Goto next state
+	END_IF
+	
+8:
+	// Compare requested state with actual state
+  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_OP THEN
+  	    _nState := _nState + 1; // Goto next state
+	END_IF;
+	
+9:
+   // All complete so reset flags
+   ResetStateToOp := TRUE;
+   _nState := 0;
+
+100:
+   ;                     // Error handling..
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetState" Id="{b8996a41-8ba6-4c9a-a1cc-b41eb4c74abc}">
+      <Declaration><![CDATA[METHOD SetState : BOOL
+VAR_INPUT
+	reqState   						: WORD; // Holds the state the device will be set to 1 = Init, 2 = PreOP, 3 =  Bootstrap, 4 = SafeOp, 8 = OP
+    tTimeout   						: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[SetState := FALSE;
+CASE _nState OF
+0:
+   _sNetID := F_CreateAmsNetId( sAMSNet ); // Convert linked EtherCAT Master AMS address and convert to string format FB's can use.
+   _nState := 1;
+
+1:
+   // Set the slave to the state requested to goto	
+   fbSetECSlaveState(
+	sNetId:= _sNetId, 
+	nSlaveAddr:= nSlaveAddr, // Linked port  
+	bExecute:= TRUE , 
+	tTimeout:= tTimeout , 
+	reqState:= reqState); // State requested to goto
+    _nState := _nState + 1; // Goto next state
+2:
+  
+  fbSetECSlaveState( bExecute := FALSE); // Reset the execute flag of set slave state
+  // Check the set slave state has completed without errors
+  IF (NOT fbSetECSlaveState.bBusy) AND (NOT fbSetECSlaveState.bError) THEN
+	 // Get slave current state so we can check it changed to the requested state
+	 fbGetECSlaveState(
+		sNetId:= _sNetId , 
+		nSlaveAddr:= nSlaveAddr, 
+		bExecute:= TRUE, 
+		tTimeout:= tTimeout);
+		_nState := 3; // Goto next state
+  END_IF
+  
+  IF fbSetECSlaveState.bError THEN
+	  _nState := 100;
+  END_IF
+  
+3:  
+	fbGetECSlaveState(bExecute := FALSE, state=> _CurrentState ); // Reset the execute flag of get slave state
+	// Check get slave state has completed without errors
+	IF (NOT fbGetECSlaveState.bBusy) AND (NOT fbGetECSlaveState.bError) THEN
+		_nState := 4; // Move on
+	END_IF
+4:
+	// Compare requested state with actual state
+	CASE (reqState) OF
+		  1:
+		  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_INIT THEN
+		  	    _nState := 5; // Move to completed state
+			END_IF;
+		  2:
+		  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_PREOP THEN
+		  	    _nState := 5; // Move to completed state
+			END_IF;
+          4:
+		  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_SAFEOP THEN
+		  	    _nState := 5; // Move to completed state
+			END_IF;
+		  8:
+		  	IF _CurrentState.deviceState = Tc2_EtherCAT.EC_DEVICE_STATE_OP THEN
+		  	    _nState := 5; // Move to completed state
+			END_IF;
+	  END_CASE
+5:
+   // All complete so reset flags
+   SetState := TRUE;
+   _nState := 0;
+
+100:
+   ;                     // Error handling..
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_SetSlaveState">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SetSlaveState.CurrentState.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SetSlaveState.GetState">
+      <LineId Id="6" Count="5" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="27" Count="5" />
+      <LineId Id="34" Count="6" />
+      <LineId Id="61" Count="6" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SetSlaveState.ResetStateToOp">
+      <LineId Id="7" Count="92" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SetSlaveState.SetState">
+      <LineId Id="6" Count="2" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="12" Count="5" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="64" Count="4" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="93" Count="3" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="71" Count="2" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="46" Count="16" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="33" Count="2" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
