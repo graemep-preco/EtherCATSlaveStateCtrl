@@ -24,6 +24,9 @@
     <Compile Include="POUs\FB_SetSlaveState.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="POUs\ITF_SetSlaveState.TcIO">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="POUs\MAIN.TcPOU">
       <SubType>Code</SubType>
     </Compile>

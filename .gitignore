@@ -361,3 +361,25 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# TwinCAT files
+*.compiled-library
+*.compileinfo
+*.tmcRefac
+*.library
+*.project.~u
+*.tclrs
+*.tnzip
+*.tpy
+*.tpzip
+*.tsproj.bk?
+*.tszip
+*.xti.bk?
+*.imgcache
+LineIDs.dbg
+_Boot/
+_CompileInfo/
+_Libraries/
+_ModuleInstall/
+_Deployment/
+_Repository/

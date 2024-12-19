@@ -30,7 +30,7 @@
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6623607A-FBC0-4F4E-B0AF-5A968A72FD51}" Name="EtherCATStateControl" PrjFilePath="..\..\EtherCATStateControl.plcproj" TmcFilePath="..\..\EtherCATStateControl.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="EtherCATStateControl.tmc" TmcHash="{AB7E1608-AE1A-1CEB-CEA7-5A8F122654F1}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="EtherCATStateControl.tmc" TmcHash="{6FE99C9C-AE76-9FED-81EF-94DB5DEA0CE3}">
 			<Name>EtherCATStateControl Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">

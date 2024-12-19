@@ -30,7 +30,7 @@
 		</DataType>
 	</DataTypes>
 	<Project GUID="{6623607A-FBC0-4F4E-B0AF-5A968A72FD51}" Name="EtherCATStateControl" PrjFilePath="..\..\EtherCATStateControl.plcproj" TmcFilePath="..\..\EtherCATStateControl.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="EtherCATStateControl.tmc" TmcHash="{AB7E1608-AE1A-1CEB-CEA7-5A8F122654F1}">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="EtherCATStateControl.tmc" TmcHash="{4A2D027D-602C-C976-B55B-6C73D8B9484B}">
 			<Name>EtherCATStateControl Instance</Name>
 			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 			<Vars VarGrpType="1">
@@ -78,6 +78,18 @@
 			<OwnerB Name="TIID^Device 1 (EtherCAT)^Term 1 (EK1100)^Term 2 (EL6652)">
 				<Link VarA="PlcTask Inputs^MAIN.fbDeviceStateCtrl.nSlaveAddr" VarB="InfoData^AdsAddr^port"/>
 				<Link VarA="PlcTask Inputs^MAIN.fbDeviceStateCtrl.sAMSNet" VarB="InfoData^AdsAddr^netId"/>
+			</OwnerB>
+			<OwnerB Name="TIID^Device 2 (ECAT EIP Scanner (EL6652))^Box 3 (EtherNet/IP Slave (generic))">
+				<Link VarA="PlcTask Inputs^MAIN.EIPDataIn" VarB="Connection 1 (Input/Output)^Inputs^MAIN.EIPDataIn" Size="16"/>
+				<Link VarA="PlcTask Inputs^MAIN.EIPDataIn" VarB="Connection 1 (Input/Output)^Inputs^Var 25" Size="16" OffsA="16"/>
+				<Link VarA="PlcTask Inputs^MAIN.EIPDataIn" VarB="Connection 1 (Input/Output)^Inputs^Var 26" Size="16" OffsA="32"/>
+				<Link VarA="PlcTask Inputs^MAIN.EIPDataIn" VarB="Connection 1 (Input/Output)^Inputs^Var 27" Size="16" OffsA="48"/>
+				<Link VarA="PlcTask Inputs^MAIN.EIPDataIn" VarB="Connection 1 (Input/Output)^Inputs^Var 28" Size="16" OffsA="64"/>
+				<Link VarA="PlcTask Outputs^MAIN.EIPDataOut" VarB="Connection 1 (Input/Output)^Outputs^MAIN.EIPDataOut" Size="16"/>
+				<Link VarA="PlcTask Outputs^MAIN.EIPDataOut" VarB="Connection 1 (Input/Output)^Outputs^Var 23" Size="16" OffsA="16"/>
+				<Link VarA="PlcTask Outputs^MAIN.EIPDataOut" VarB="Connection 1 (Input/Output)^Outputs^Var 42" Size="16" OffsA="32"/>
+				<Link VarA="PlcTask Outputs^MAIN.EIPDataOut" VarB="Connection 1 (Input/Output)^Outputs^Var 43" Size="16" OffsA="48"/>
+				<Link VarA="PlcTask Outputs^MAIN.EIPDataOut" VarB="Connection 1 (Input/Output)^Outputs^Var 44" Size="16" OffsA="64"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>

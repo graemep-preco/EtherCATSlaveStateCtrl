@@ -17,7 +17,7 @@ Version history:
 +-------------+------------+----------------+----------+------------------------------------------+
 
 *)
-FUNCTION_BLOCK FB_SetSlaveState
+FUNCTION_BLOCK FB_SetSlaveState IMPLEMENTS ITF_SetSlaveState
 VAR_INPUT
 	sAMSNet		  AT %I*			: AMSNETID; // Linked to EtherCAT master
     nSlaveAddr    AT %I*     		: UINT;	    //  Linked to PortID of slave device

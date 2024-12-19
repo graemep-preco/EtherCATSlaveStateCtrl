@@ -4,23 +4,31 @@
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
 	fbDeviceStateCtrl		: FB_SetSlaveState;
-	bSetToInit				: BOOL;
-	bSetToOP				: BOOL;
+	_bSetToInit				: BOOL;
+	_bSetToOP				: BOOL;
+	_bResetToOp				: BOOL;
+	
 	EIPDataIn AT %I*		: ARRAY[1..5] OF WORD; 
 	EIPDataOut AT %Q*		: ARRAY[1..5] OF WORD; 
 
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[IF bSetToInit THEN
+      <ST><![CDATA[IF _bSetToInit THEN
 	IF fbDeviceStateCtrl.SetState(1,T#2S) THEN
-		bSetToInit := FALSE;
+		_bSetToInit := FALSE;
 	END_IF
 END_IF
 
-IF bSetToOP THEN
+IF _bSetToOP THEN
 	IF fbDeviceStateCtrl.SetState(8, T#2S) THEN
-		bSetToOP := FALSE;
+		_bSetToOP := FALSE;
+	END_IF
+END_IF
+
+IF _bResetToOp THEN
+	IF fbDeviceStateCtrl.ResetStateToOp(T#3S) THEN
+		_bResetToOp := FALSE;
 	END_IF
 END_IF
 
@@ -29,7 +37,13 @@ END_IF
 ]]></ST>
     </Implementation>
     <LineIds Name="MAIN">
-      <LineId Id="3" Count="13" />
+      <LineId Id="3" Count="10" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="14" Count="2" />
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

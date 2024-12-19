@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="ITF_SetSlaveState" Id="{26f2fae9-6bef-4149-9253-7608c3c4ba90}">
+    <Declaration><![CDATA[INTERFACE ITF_SetSlaveState
+]]></Declaration>
+    <Property Name="CurrentState" Id="{ae06a7ee-435e-41b3-9f81-114690ac8b32}">
+      <Declaration><![CDATA[PROPERTY CurrentState : ST_EcSlaveState]]></Declaration>
+      <Get Name="Get" Id="{e0f9054d-70d5-4b9f-bf33-c3b805f15275}">
+        <Declaration><![CDATA[]]></Declaration>
+      </Get>
+    </Property>
+    <Method Name="GetState" Id="{deddb422-cdc2-47c0-96c8-c9813e681d90}">
+      <Declaration><![CDATA[METHOD GetState : BOOL
+VAR_INPUT
+	tTimeout   						: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="ResetStateToOp" Id="{f81e3a86-07a2-4e71-a5e7-45afdfe8cffb}">
+      <Declaration><![CDATA[METHOD ResetStateToOp : BOOL
+VAR_INPUT
+	tTimeout   						: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="SetState" Id="{9288b699-49eb-420f-929a-e1c70a304827}">
+      <Declaration><![CDATA[METHOD SetState : BOOL
+VAR_INPUT
+	reqState   						: WORD; // Holds the state the device will be set to 1 = Init, 2 = PreOP, 3 =  Bootstrap, 4 = SafeOp, 8 = OP
+    tTimeout   						: TIME := T#10S; // Timeout time for ECSetSlaveState FB
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>
